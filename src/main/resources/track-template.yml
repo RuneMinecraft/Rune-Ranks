@@ -1,0 +1,4 @@
+name: 'Default'
+
+groups:
+  - 'group.member'

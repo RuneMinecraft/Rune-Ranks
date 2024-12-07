@@ -1,0 +1,11 @@
+username: 'dank1234'
+uuid: 'INSERT UUID HERE'
+
+groups:
+  - 'group.member'
+
+tracks:
+  - ['default', '0']
+
+permissions:
+  - 'bukkit.command.op'

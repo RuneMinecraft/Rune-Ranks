@@ -1,0 +1,16 @@
+name: Rune-Ranks
+version: '0.1'
+main: net.runemc.plugin.Main
+api-version: '1.21'
+prefix: Ranks
+load: STARTUP
+authors:
+  - dank1234
+description: The ranks backing for RuneMC
+website: https://www.runemc.net/
+
+libraries:
+  - org.reflections:reflections:0.10.2
+
+commands:
+  ranks:

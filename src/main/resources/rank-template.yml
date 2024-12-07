@@ -1,0 +1,9 @@
+name: 'Member' # Only accessed in commands
+prefix: '&7&lMember' # Shown on tab and in chat before the users name
+suffix: '' # Shows on tab and in chat after the users name
+weight: 0 # Handles order of ranks on tab
+inherit-groups: [] # Other groups that the group contains, such as Mod having all of the permissions as Helper + more.
+
+permissions:
+  - 'essentials.fly' # Each permission anyone with the group will have.
+  - 'rune.member'

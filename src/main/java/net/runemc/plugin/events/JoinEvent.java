@@ -13,6 +13,6 @@ public class JoinEvent implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws IOException {
-        User user = User.get(event.getPlayer().getName(), event.getPlayer().getUniqueId());
+        User user = User.Companion.get(event.getPlayer().getName(), event.getPlayer().getUniqueId());
     }
 }

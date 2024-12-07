@@ -3,8 +3,7 @@ package net.runemc.plugin;
 import net.runemc.plugin.command.RanksCommand;
 import net.runemc.plugin.events.ChatEvent;
 import net.runemc.plugin.events.JoinEvent;
-import net.runemc.plugin.ranks.Group;
-import net.runemc.plugin.ranks.User;
+import net.runemc.plugin.ranks.*;
 import net.runemc.utils.Config;
 import net.runemc.utils.command.Register;
 import org.bukkit.Bukkit;
@@ -41,9 +40,9 @@ public final class Main extends JavaPlugin {
 
         for (File userFile : Objects.requireNonNull(usersFolder.listFiles((dir, name) -> name.endsWith(".yml")))) {
             try {
-                User user = User.get(userFile);
-                loadedUsers.put(user.uuid(), user.username());
-                getLogger().info("Loaded user: " + user.username());
+                User user = User.Companion.get(userFile);
+                loadedUsers.put(user.getUuid(), user.getUsername());
+                getLogger().info("Loaded user: " + user.getUsername());
             } catch (IOException e) {
                 getLogger().severe("Failed to load user file: " + userFile.getName());
                 e.printStackTrace();
@@ -57,21 +56,6 @@ public final class Main extends JavaPlugin {
         Objects.requireNonNull(getCommand("ranks")).setExecutor(new RanksCommand());
         Bukkit.getPluginManager().registerEvents(new JoinEvent(), this);
         Bukkit.getPluginManager().registerEvents(new ChatEvent(), this);
-
-        try {
-            Group group = Group.get("rank-template");
-            System.out.println(group.name());
-            System.out.println(group.prefix());
-            System.out.println(group.suffix());
-            System.out.println(group.weight());
-            System.out.println(group.inheritedGroups());
-            System.out.println(group.permissions());
-
-            group.setWeight(24);
-            System.out.println(group.weight());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -79,7 +63,7 @@ public final class Main extends JavaPlugin {
         for (UUID uuid : loadedUsers.keySet()) {
             try {
                 String username = loadedUsers.get(uuid);
-                User user = User.get(username, uuid);
+                User user = User.Companion.get(username, uuid);
                 user.save();
                 getLogger().info("Saved user: " + username);
             } catch (IOException e) {

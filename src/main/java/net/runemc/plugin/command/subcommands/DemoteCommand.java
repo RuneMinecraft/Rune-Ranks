@@ -17,10 +17,10 @@ public class DemoteCommand {
         String username = args[1];
         String trackName = args[2];
 
-        User user = User.get(username, UserUtils.resolveUUID(username));
-        Track track = Track.get(trackName);
+        User user = User.Companion.get(username, UserUtils.resolveUUID(username));
+        Track track = Track.Companion.get(trackName);
 
-        user.tracks().put(track, user.tracks().get(track)-1);
+        user.getTracks().put(track, user.getTracks().get(track)-1);
         sender.sendMessage("Demoted user " + username + " in track " + trackName);
     }
 }

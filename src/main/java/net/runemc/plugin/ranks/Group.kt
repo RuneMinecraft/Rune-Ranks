@@ -1,162 +1,102 @@
-package net.runemc.plugin.ranks;
+package net.runemc.plugin.ranks
 
-import net.runemc.plugin.Main;
-import net.runemc.utils.Config;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.runemc.plugin.Main
+import net.runemc.utils.Config
+import java.io.File
+import java.io.IOException
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
+data class Group(
+    private val file: File,
+    var name: String,
+    var prefix: String,
+    var suffix: String?,
+    var weight: Int,
+    val inheritedGroups: MutableList<Group> = mutableListOf(),
+    val permissions: MutableList<String> = mutableListOf()
+) {
+    companion object {
+        @Throws(IOException::class) fun create(name: String, prefix: String, suffix: String? = "", weight: Int): Group {
+            val file = File("config/groups/${name.lowercase()}.yml")
+            if (file.exists()) {
+                throw IllegalStateException("Group already exists: $name")
+            }
 
-@NotNull
-public final class Group {
-    private final @NotNull File file;
-
-    private @NotNull String name;
-    private @NotNull String prefix;
-    private @Nullable String suffix;
-    private int weight;
-
-    private final @NotNull List<Group> inheritedGroups = new ArrayList<>();
-    private final @NotNull List<String> permissions = new ArrayList<>();
-
-    private Group(@NotNull File file, @NotNull String name, @NotNull String prefix, @Nullable String suffix, int weight) {
-        this.file = file;
-        this.name = name;
-        this.prefix = prefix;
-        this.suffix = suffix;
-        this.weight = weight;
-    }
-
-    public static Group create(@NotNull String name, @NotNull String prefix, @Nullable String suffix, int weight) throws IOException {
-        File file = new File("config/groups/" + name.toLowerCase() + ".yml");
-        if (file.exists()) {
-            throw new IllegalStateException("Group already exists: " + name);
+            val group = Group(file, name, prefix, suffix, weight)
+            group.save()
+            return group
         }
 
-        Group group = new Group(file, name, prefix, suffix, weight);
-        group.save();
-        return group;
-    }
-    public static Group create(@NotNull String name, @NotNull String prefix, int weight) throws IOException {
-        return create(name, prefix, "", weight);
-    }
-
-    public static Group get(@NotNull String name) throws IOException {
-        File file = new File(Main.get().getDataFolder()+"/groups/" + name.toLowerCase() + ".yml");
-        return get(file);
-    }
-    public static Group get(@NotNull File file) throws IOException {
-        if (!file.exists()) {
-            throw new IOException("File does not exist: " + file.getPath());
+        @Throws(IOException::class) fun get(name: String): Group {
+            val file = File(Main.get().dataFolder, "groups/${name.lowercase()}.yml")
+            return get(file)
         }
+        @Throws(IOException::class) fun get(file: File): Group {
+            if (!file.exists()) {
+                throw IOException("File does not exist: ${file.path}")
+            }
 
-        var map = Config.load(file, Object.class);
-        if (!(map instanceof java.util.Map<?, ?> yamlData)) {
-            throw new IOException("Invalid YAML structure in: " + file.getName());
+            val yamlData = Config.load(file, Any::class.java) as? Map<*, *>
+                ?: throw IOException("Invalid YAML structure in: ${file.name}")
+
+            val name = yamlData["name"] as String
+            val prefix = yamlData["prefix"] as String
+            val suffix = yamlData["suffix"] as? String
+            val weight = yamlData["weight"] as Int
+
+            val group = Group(file, name, prefix, suffix, weight)
+
+            val inheritedGroupNames = yamlData["inherited-groups"] as? List<String> ?: emptyList()
+            for (groupName in inheritedGroupNames) {
+                group.inheritedGroups.add(Group.get(groupName))
+            }
+
+            group.permissions.addAll(yamlData["permissions"] as? List<String> ?: emptyList())
+            return group
         }
-
-        String name = (String) yamlData.get("name");
-        String prefix = (String) yamlData.get("prefix");
-        String suffix = (String) yamlData.get("suffix");
-        int weight = (int) yamlData.get("weight");
-
-        Group group = new Group(file, name, prefix, suffix, weight);
-        List<String> groups = (List<String>) yamlData.getOrDefault("inherited-groups", null);
-        if (groups == null) {
-            groups = new ArrayList<>();
-        }
-        for (String groupName : groups) {
-            group.inheritedGroups.add(Group.get(groupName));
-        }
-
-        group.permissions.addAll((List<String>) yamlData.getOrDefault("permissions", null));
-
-        return group;
     }
 
-    public void addPermission(@NotNull String permission) throws IOException {
+    @Throws(IOException::class) fun addPermission(permission: String) {
         if (!permissions.contains(permission)) {
-            permissions.add(permission);
-            save();
+            permissions.add(permission)
+            save()
         }
     }
-    public void removePermission(@NotNull String permission) throws IOException {
+    @Throws(IOException::class) fun removePermission(permission: String) {
         if (permissions.remove(permission)) {
-            save();
+            save()
         }
     }
-    public void clearPermissions() throws IOException {
-        permissions.clear();
-        save();
+    @Throws(IOException::class) fun clearPermissions() {
+        permissions.clear()
+        save()
     }
 
-    public void addInheritedGroup(@NotNull String name) throws IOException {
-        Group inherited = Group.get(name);
+    @Throws(IOException::class) fun addInheritedGroup(name: String) {
+        val inherited = Group.get(name)
         if (!inheritedGroups.contains(inherited)) {
-            inheritedGroups.add(inherited);
-            save();
+            inheritedGroups.add(inherited)
+            save()
         }
     }
-    public void removeInheritedGroup(@NotNull String name) throws IOException {
-        inheritedGroups.removeIf(group -> group.name().equalsIgnoreCase(name));
-        save();
+    @Throws(IOException::class) fun removeInheritedGroup(name: String) {
+        inheritedGroups.removeIf { it.name.equals(name, ignoreCase = true) }
+        save()
     }
-    public void clearInheritedGroups() throws IOException {
-        inheritedGroups.clear();
-        save();
-    }
-
-    public void setName(@NotNull String name) throws IOException {
-        this.name = name;
-        save();
-    }
-    public void setPrefix(@NotNull String prefix) throws IOException {
-        this.prefix = prefix;
-        save();
-    }
-    public void setSuffix(@Nullable String suffix) throws IOException {
-        this.suffix = suffix;
-        save();
-    }
-    public void setWeight(int weight) throws IOException {
-        this.weight = weight;
-        save();
+    @Throws(IOException::class) fun clearInheritedGroups() {
+        inheritedGroups.clear()
+        save()
     }
 
-    public @NotNull File file() {
-        return this.file;
-    }
-    public @NotNull String name() {
-        return this.name;
-    }
-    public @NotNull String prefix() {
-        return this.prefix;
-    }
-    public @Nullable String suffix() {
-        return this.suffix;
-    }
-    public int weight() {
-        return this.weight;
-    }
-    public @NotNull List<Group> inheritedGroups() {
-        return this.inheritedGroups;
-    }
-    public @NotNull List<String> permissions() {
-        return this.permissions;
-    }
+    @Throws(IOException::class) private fun save() {
+        val yamlData = linkedMapOf(
+            "name" to name,
+            "prefix" to prefix,
+            "suffix" to suffix,
+            "weight" to weight,
+            "inherited-groups" to inheritedGroups.map { it.name },
+            "permissions" to permissions
+        )
 
-    private void save() throws IOException {
-        var yamlData = new java.util.LinkedHashMap<String, Object>();
-        yamlData.put("name", name);
-        yamlData.put("prefix", prefix);
-        yamlData.put("suffix", suffix);
-        yamlData.put("weight", weight);
-        yamlData.put("inherit-groups", new ArrayList<>(inheritedGroups));
-        yamlData.put("permissions", new ArrayList<>(permissions));
-
-        Config.save(file, yamlData);
+        Config.save(file, yamlData)
     }
 }

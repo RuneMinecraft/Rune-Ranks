@@ -10,7 +10,7 @@ import java.io.IOException;
 public class ChatEvent implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) throws IOException {
-        User user = User.get(e.getPlayer().getName(), e.getPlayer().getUniqueId());
-        e.setFormat(user.groups().getLast().prefix()+" "+ e.getPlayer().getName()+": "+e.getMessage());
+        User user = User.Companion.get(e.getPlayer().getName(), e.getPlayer().getUniqueId());
+        e.setFormat(user.getGroups().getLast().getPrefix()+" "+ e.getPlayer().getName()+": "+e.getMessage());
     }
 }

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 group = 'net.runemc'
@@ -22,13 +23,12 @@ dependencies {
     implementation("org.yaml:snakeyaml:2.0")
     implementation("org.reflections:reflections:0.10.2")
     implementation("org.jetbrains:annotations:24.1.0")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 def targetJavaVersion = 21
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
@@ -49,4 +49,7 @@ processResources {
     filesMatching('plugin.yml') {
         expand props
     }
+}
+kotlin {
+    jvmToolchain(21)
 }

@@ -27,7 +27,7 @@ public class UserCommand {
 
         User user;
         try {
-            user = User.get(username, uuid);
+            user = User.Companion.get(username, uuid);
         } catch (IOException e) {
             sender.sendMessage("An error occurred while fetching the user data for '" + username + "'.");
             e.printStackTrace();
@@ -39,15 +39,15 @@ public class UserCommand {
                 switch (target) {
                     case "set" -> {
                         user.clearGroups();
-                        user.addGroup(Group.get(value));
+                        user.addGroup(Group.Companion.get(value));
                         sender.sendMessage("Set group for user " + username + " to " + value);
                     }
                     case "add" -> {
-                        user.addGroup(Group.get(value));
+                        user.addGroup(Group.Companion.get(value));
                         sender.sendMessage("Added group " + value + " to user " + username);
                     }
                     case "remove" -> {
-                        user.removeGroup(Group.get(value));
+                        user.removeGroup(Group.Companion.get(value));
                         sender.sendMessage("Removed group " + value + " from user " + username);
                     }
                     default -> sender.sendMessage("Unknown group action. Use set/add/remove.");
@@ -56,11 +56,11 @@ public class UserCommand {
             case "track" -> {
                 switch (target) {
                     case "set" -> {
-                        user.addTrack(Track.get(value));
+                        user.addTrack(Track.Companion.get(value));
                         sender.sendMessage("Set track for user " + username + " to " + value);
                     }
                     case "remove" -> {
-                        user.removeTrack(Track.get(value));
+                        user.removeTrack(Track.Companion.get(value));
                         sender.sendMessage("Removed track for user " + username);
                     }
                     default -> sender.sendMessage("Unknown track action. Use set/remove.");

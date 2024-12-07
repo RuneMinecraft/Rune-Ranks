@@ -1,93 +1,73 @@
-package net.runemc.plugin.ranks;
+package net.runemc.plugin.ranks
 
-import net.runemc.plugin.Main;
-import net.runemc.utils.Config;
-import org.jetbrains.annotations.NotNull;
+import net.runemc.plugin.Main
+import net.runemc.utils.Config
+import java.io.File
+import java.io.IOException
 
-import java.io.IOException;
-import java.util.*;
-import java.io.File;
+data class Track(
+    private val file: File,
+    val name: String,
+    val groups: MutableList<Group> = mutableListOf()
+) {
+    companion object {
+        @Throws(IOException::class) fun create(name: String): Track {
+            val file = File("config/tracks/${name.lowercase()}.yml")
+            if (file.exists()) {
+                throw IllegalStateException("Track already exists: $name")
+            }
 
-@NotNull
-public final class Track {
-    private final @NotNull File file;
+            val track = Track(file, name)
+            track.save()
+            return track
+        }
 
-    private final @NotNull String name;
-    private final @NotNull List<Group> groups = new ArrayList<>();
+        @Throws(IOException::class) fun get(name: String): Track {
+            val file = File(Main.get().dataFolder, "tracks/${name.lowercase()}.yml")
+            return get(file)
+        }
+        @Throws(IOException::class) fun get(file: File): Track {
+            if (!file.exists()) {
+                throw IOException("File does not exist: ${file.path}")
+            }
 
-    private Track(@NotNull File file, @NotNull String name) {
-        this.file = file;
-        this.name = name;
+            val yamlData = Config.load(file, Any::class.java) as? Map<*, *>
+                ?: throw IOException("Invalid YAML structure in: ${file.name}")
+
+            val name = yamlData["name"] as String
+            val track = Track(file, name)
+
+            val groupNames = yamlData["groups"] as? List<String> ?: emptyList()
+            for (groupName in groupNames) {
+                track.groups.add(Group.get(groupName))
+            }
+
+            return track
+        }
     }
 
-    public static Track create(@NotNull String name) throws IOException {
-        File file = new File("config/tracks/" + name.toLowerCase() + ".yml");
-        if (file.exists()) {
-            throw new IllegalStateException("Track already exists: " + name);
-        }
-
-        Track track = new Track(file, name);
-        track.save();
-        return track;
-    }
-
-    public static Track get(@NotNull String name) throws IOException {
-        File file = new File(Main.get().getDataFolder() + "/tracks/" + name.toLowerCase() + ".yml");
-        return get(file);
-    }
-    public static Track get(@NotNull File file) throws IOException {
-        if (!file.exists()) {
-            throw new IOException("File does not exist: " + file.getPath());
-        }
-
-        var map = Config.load(file, Object.class);
-        if (!(map instanceof java.util.Map<?, ?> yamlData)) {
-            throw new IOException("Invalid YAML structure in: " + file.getName());
-        }
-
-        String name = (String) yamlData.get("name");
-        Track track = new Track(file, name);
-        List<String> groups = (List<String>) yamlData.getOrDefault("groups", null);
-        if (groups == null) {
-            groups = new ArrayList<>();
-        }
-        for (String groupName : groups) {
-            track.groups.add(Group.get(groupName));
-        }
-        return track;
-    }
-
-    public void addGroup(@NotNull Group group) throws IOException {
+    @Throws(IOException::class) fun addGroup(group: Group) {
         if (!groups.contains(group)) {
-            groups.add(group);
-            save();
+            groups.add(group)
+            save()
         }
     }
-    public void removeGroup(@NotNull String group) throws IOException {
+    @Throws(IOException::class) fun removeGroup(group: Group) {
         if (groups.remove(group)) {
-            save();
+            save()
         }
     }
-    public void clearGroups() throws IOException {
-        groups.clear();
-        save();
+    @Throws(IOException::class) fun clearGroups() {
+        groups.clear()
+        save()
     }
 
-    public @NotNull File file() {
-        return file;
-    }
-    public @NotNull String name() {
-        return name;
-    }
-    public @NotNull List<Group> groups() {
-        return new ArrayList<>(groups);
-    }
+    @Throws(IOException::class) private fun save() {
+        val yamlData = linkedMapOf(
+            "name" to name,
+            "groups" to groups.map { it.name }
+        )
 
-    private void save() throws IOException {
-        var yamlData = new java.util.LinkedHashMap<String, Object>();
-        yamlData.put("name", name);
-        yamlData.put("groups", new ArrayList<>(groups));
-
-        Config.save(file, yamlData);
+        Config.save(file, yamlData)
     }
 }

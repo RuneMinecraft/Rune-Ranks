@@ -4,7 +4,7 @@ A backend plugin for the RuneMC Minecraft Server, which handles the custom ranki
 ## Features
 > ### Global
 > - [ ] Add the full weight system with sorting the ranks list in the user.
-> - [ ] add mfing colours for chat messages [code is in Utils.java in rune-core im just lazy]
+> - [ ] add mfing colours [use import static net.runemc.utils.Utils.*] and write the command responses properly
 > - [ ] /ranks user [USER] info
 > - [ ] /ranks group [GROUP] info
 > - [ ] /ranks track [TRACK] info

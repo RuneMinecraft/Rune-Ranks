@@ -17,7 +17,7 @@ public class GroupCommand {
         String target = args[3].toLowerCase();
         String value = args[4];
 
-        Group group = Group.get(groupName);
+        Group group = Group.Companion.get(groupName);
 
         switch (action) {
             case "name" -> {

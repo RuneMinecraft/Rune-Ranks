@@ -18,16 +18,16 @@ public class TrackCommand {
         String target = args[3].toLowerCase();
         String value = args[4];
 
-        Track track = Track.get(trackName);
+        Track track = Track.Companion.get(trackName);
 
         if (action.equals("group")) {
             switch (target) {
                 case "add" -> {
-                    track.addGroup(Group.get(value));
+                    track.addGroup(Group.Companion.get(value));
                     sender.sendMessage("Added group " + value + " to track " + trackName);
                 }
                 case "remove" -> {
-                    track.removeGroup(value);
+                    track.removeGroup(Group.Companion.get(value));
                     sender.sendMessage("Removed group " + value + " from track " + trackName);
                 }
                 default -> sender.sendMessage("Unknown group action. Use add/remove.");
